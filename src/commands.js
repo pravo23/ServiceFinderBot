@@ -1,3 +1,4 @@
+const { validatePhoneNumber, validateService, validateCity, cleanValue } = require('./validation');
 const redis = require('../config/redis');
 
 async function handleFind(bot, msg, match) {
@@ -40,12 +41,6 @@ async function handleFind(bot, msg, match) {
   }
 }
 
-function cleanValue(value) {
-  let cleaned = value.trim();
-  cleaned = cleaned.replace(/[^a-zA-Z0-9\s]/g, '');
-  return cleaned;
-}
-
 async function handleAdd(bot, msg, match) {
   const chatId = msg.chat.id;
   let input = match[1].trim();
@@ -60,7 +55,6 @@ async function handleAdd(bot, msg, match) {
   }
 
   const [serviceAndName, phoneAndCity] = parts;
-
   const phoneCityParts = phoneAndCity.split(' in ');
 
   if (phoneCityParts.length !== 2) {
@@ -76,8 +70,18 @@ async function handleAdd(bot, msg, match) {
   const cleanPhone = cleanValue(phone);
   const cleanCity = cleanValue(city);
 
-  if (!cleanService || !cleanName || !cleanPhone || !cleanCity) {
-    bot.sendMessage(chatId, "Invalid input values. Please make sure all fields are correctly formatted.");
+  if (!validateService(cleanService)) {
+    bot.sendMessage(chatId, "Invalid service name. Please use one of the common services.");
+    return;
+  }
+
+  if (!validatePhoneNumber(cleanPhone)) {
+    bot.sendMessage(chatId, "Invalid phone number format.");
+    return;
+  }
+
+  if (!validateCity(cleanCity)) {
+    bot.sendMessage(chatId, "Invalid city name format.");
     return;
   }
 
