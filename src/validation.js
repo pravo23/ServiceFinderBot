@@ -4,12 +4,11 @@ function parsePhoneNumber(phoneNumber) {
   phoneNumber = phoneNumber.replace(/[\s-()]/g, '');
   // Remove +91, 91, or leading 0
   phoneNumber = phoneNumber.replace(/^(\+91|91|0)/, '');
-  
+
   return phoneNumber;
 }
 
 function validateIndianPhoneNumber(phoneNumber) {
-  
   phoneNumber = parsePhoneNumber(phoneNumber);
   const indianPhoneRegex = /^[6-9]\d{9}$/;
 
@@ -29,4 +28,10 @@ function parseValue(value) {
   return parsed.replace(/[^a-zA-Z0-9\s]/g, '');
 }
 
-module.exports = { validateIndianPhoneNumber, parsePhoneNumber, validateService, validateCity, parseValue };
+module.exports = {
+  validateIndianPhoneNumber,
+  parsePhoneNumber,
+  validateService,
+  validateCity,
+  parseValue,
+};

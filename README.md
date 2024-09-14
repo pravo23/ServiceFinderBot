@@ -6,30 +6,30 @@
 
 1. **Clone the repository:**
 
-    ```bash
-    git clone <repository-url>
-    cd <repository-directory>
-    ```
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
 
 2. **Install dependencies:**
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 3. **Set up your Telegram bot token:**
 
-    Create a `.env` file with the following content:
+   Create a `.env` file with the following content:
 
-    ```env
-    TELEGRAM_BOT_TOKEN=your-telegram-bot-token
-    ```
+   ```env
+   TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+   ```
 
 4. **Run the bot:**
 
-    ```bash
-    node app.js
-    ```
+   ```bash
+   node app.js
+   ```
 
 ## Commands
 

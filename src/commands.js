@@ -1,4 +1,10 @@
-const { validateIndianPhoneNumber, parsePhoneNumber, validateService, validateCity, parseValue } = require('./validation');
+const {
+  validateIndianPhoneNumber,
+  parsePhoneNumber,
+  validateService,
+  validateCity,
+  parseValue,
+} = require('./validation');
 const redis = require('../config/redis');
 
 async function handleFind(bot, msg, match) {
@@ -10,7 +16,10 @@ async function handleFind(bot, msg, match) {
   const parts = input.split(' in ');
 
   if (parts.length !== 2) {
-    bot.sendMessage(chatId, 'Please provide the correct format: /find <service> in <city>');
+    bot.sendMessage(
+      chatId,
+      'Please provide the correct format: /find <service> in <city>'
+    );
     return;
   }
 
@@ -20,7 +29,10 @@ async function handleFind(bot, msg, match) {
   const parsedCity = parseValue(city);
 
   if (!parsedService || !parsedCity) {
-    bot.sendMessage(chatId, 'Invalid input values. Please make sure both service and city are correctly formatted.');
+    bot.sendMessage(
+      chatId,
+      'Invalid input values. Please make sure both service and city are correctly formatted.'
+    );
     return;
   }
 
@@ -30,14 +42,25 @@ async function handleFind(bot, msg, match) {
     const providers = await redis.smembers(key);
 
     if (providers.length > 0) {
-      const providerList = providers.map((provider, index) => `${index + 1}. ${provider}`).join('\n');
-      bot.sendMessage(chatId, `Here are the ${parsedService} providers in ${parsedCity}:\n\n${providerList}`);
+      const providerList = providers
+        .map((provider, index) => `${index + 1}. ${provider}`)
+        .join('\n');
+      bot.sendMessage(
+        chatId,
+        `Here are the ${parsedService} providers in ${parsedCity}:\n\n${providerList}`
+      );
     } else {
-      bot.sendMessage(chatId, `No ${parsedService} providers found in ${parsedCity}.`);
+      bot.sendMessage(
+        chatId,
+        `No ${parsedService} providers found in ${parsedCity}.`
+      );
     }
   } catch (err) {
     console.error('Error fetching providers:', err);
-    bot.sendMessage(chatId, 'An error occurred while fetching the service providers.');
+    bot.sendMessage(
+      chatId,
+      'An error occurred while fetching the service providers.'
+    );
   }
 }
 
@@ -50,7 +73,10 @@ async function handleAdd(bot, msg, match) {
   const parts = input.split(' with ');
 
   if (parts.length !== 2) {
-    bot.sendMessage(chatId, 'Please provide the correct format: /add <service> <name> with <phone> in <city>');
+    bot.sendMessage(
+      chatId,
+      'Please provide the correct format: /add <service> <name> with <phone> in <city>'
+    );
     return;
   }
 
@@ -58,7 +84,10 @@ async function handleAdd(bot, msg, match) {
   const phoneCityParts = phoneAndCity.split(' in ');
 
   if (phoneCityParts.length !== 2) {
-    bot.sendMessage(chatId, 'Please provide the correct format: /add <service> <name> with <phone> in <city>');
+    bot.sendMessage(
+      chatId,
+      'Please provide the correct format: /add <service> <name> with <phone> in <city>'
+    );
     return;
   }
 
@@ -71,7 +100,10 @@ async function handleAdd(bot, msg, match) {
   const parsedCity = parseValue(city);
 
   if (!validateService(parsedService)) {
-    bot.sendMessage(chatId, 'Invalid service name. Please use one of the common services.');
+    bot.sendMessage(
+      chatId,
+      'Invalid service name. Please use one of the common services.'
+    );
     return;
   }
 
@@ -86,21 +118,30 @@ async function handleAdd(bot, msg, match) {
   }
 
   const key = `${parsedCity.toLowerCase()}_${parsedService.toLowerCase()}`;
-  const value = `${parsedName}, ${'+91'+parsedPhone}`;
+  const value = `${parsedName}, ${'+91' + parsedPhone}`;
 
   try {
     const result = await redis.sadd(key, value);
 
     if (result === 1) {
-      bot.sendMessage(chatId, `Added ${parsedName} (${parsedService}) in ${parsedCity} with phone number ${parsedPhone}.`);
+      bot.sendMessage(
+        chatId,
+        `Added ${parsedName} (${parsedService}) in ${parsedCity} with phone number ${parsedPhone}.`
+      );
     } else if (result === 0) {
-      bot.sendMessage(chatId, `${parsedName} is already listed under ${parsedService} in ${parsedCity}.`);
+      bot.sendMessage(
+        chatId,
+        `${parsedName} is already listed under ${parsedService} in ${parsedCity}.`
+      );
     } else {
       bot.sendMessage(chatId, 'Unexpected result when adding provider.');
     }
   } catch (err) {
     console.error('Error adding provider:', err);
-    bot.sendMessage(chatId, 'An error occurred while adding the service provider.');
+    bot.sendMessage(
+      chatId,
+      'An error occurred while adding the service provider.'
+    );
   }
 }
 
