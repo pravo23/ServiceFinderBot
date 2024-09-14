@@ -1,4 +1,4 @@
-const { validatePhoneNumber, validateService, validateCity, cleanValue } = require('./validation');
+const { validateIndianPhoneNumber, parsePhoneNumber, validateService, validateCity, parseValue } = require('./validation');
 const redis = require('../config/redis');
 
 async function handleFind(bot, msg, match) {
@@ -10,34 +10,34 @@ async function handleFind(bot, msg, match) {
   const parts = input.split(' in ');
 
   if (parts.length !== 2) {
-    bot.sendMessage(chatId, "Please provide the correct format: /find <service> in <city>");
+    bot.sendMessage(chatId, 'Please provide the correct format: /find <service> in <city>');
     return;
   }
 
   const [service, city] = parts;
 
-  const cleanService = cleanValue(service);
-  const cleanCity = cleanValue(city);
+  const parsedService = parseValue(service);
+  const parsedCity = parseValue(city);
 
-  if (!cleanService || !cleanCity) {
-    bot.sendMessage(chatId, "Invalid input values. Please make sure both service and city are correctly formatted.");
+  if (!parsedService || !parsedCity) {
+    bot.sendMessage(chatId, 'Invalid input values. Please make sure both service and city are correctly formatted.');
     return;
   }
 
-  const key = `${cleanCity.toLowerCase()}_${cleanService.toLowerCase()}`;
+  const key = `${parsedCity.toLowerCase()}_${parsedService.toLowerCase()}`;
 
   try {
     const providers = await redis.smembers(key);
 
     if (providers.length > 0) {
       const providerList = providers.map((provider, index) => `${index + 1}. ${provider}`).join('\n');
-      bot.sendMessage(chatId, `Here are the ${cleanService} providers in ${cleanCity}:\n\n${providerList}`);
+      bot.sendMessage(chatId, `Here are the ${parsedService} providers in ${parsedCity}:\n\n${providerList}`);
     } else {
-      bot.sendMessage(chatId, `No ${cleanService} providers found in ${cleanCity}.`);
+      bot.sendMessage(chatId, `No ${parsedService} providers found in ${parsedCity}.`);
     }
   } catch (err) {
     console.error('Error fetching providers:', err);
-    bot.sendMessage(chatId, "An error occurred while fetching the service providers.");
+    bot.sendMessage(chatId, 'An error occurred while fetching the service providers.');
   }
 }
 
@@ -50,7 +50,7 @@ async function handleAdd(bot, msg, match) {
   const parts = input.split(' with ');
 
   if (parts.length !== 2) {
-    bot.sendMessage(chatId, "Please provide the correct format: /add <service> <name> with <phone> in <city>");
+    bot.sendMessage(chatId, 'Please provide the correct format: /add <service> <name> with <phone> in <city>');
     return;
   }
 
@@ -58,49 +58,49 @@ async function handleAdd(bot, msg, match) {
   const phoneCityParts = phoneAndCity.split(' in ');
 
   if (phoneCityParts.length !== 2) {
-    bot.sendMessage(chatId, "Please provide the correct format: /add <service> <name> with <phone> in <city>");
+    bot.sendMessage(chatId, 'Please provide the correct format: /add <service> <name> with <phone> in <city>');
     return;
   }
 
   const [phone, city] = phoneCityParts;
   const [service, name] = serviceAndName.split(' ');
 
-  const cleanService = cleanValue(service);
-  const cleanName = cleanValue(name);
-  const cleanPhone = cleanValue(phone);
-  const cleanCity = cleanValue(city);
+  const parsedService = parseValue(service);
+  const parsedName = parseValue(name);
+  const parsedPhone = parsePhoneNumber(phone);
+  const parsedCity = parseValue(city);
 
-  if (!validateService(cleanService)) {
-    bot.sendMessage(chatId, "Invalid service name. Please use one of the common services.");
+  if (!validateService(parsedService)) {
+    bot.sendMessage(chatId, 'Invalid service name. Please use one of the common services.');
     return;
   }
 
-  if (!validatePhoneNumber(cleanPhone)) {
-    bot.sendMessage(chatId, "Invalid phone number format.");
+  if (!validateIndianPhoneNumber(parsedPhone)) {
+    bot.sendMessage(chatId, 'Invalid phone number format.');
     return;
   }
 
-  if (!validateCity(cleanCity)) {
-    bot.sendMessage(chatId, "Invalid city name format.");
+  if (!validateCity(parsedCity)) {
+    bot.sendMessage(chatId, 'Invalid city name format.');
     return;
   }
 
-  const key = `${cleanCity.toLowerCase()}_${cleanService.toLowerCase()}`;
-  const value = `${cleanName}, ${cleanPhone}`;
+  const key = `${parsedCity.toLowerCase()}_${parsedService.toLowerCase()}`;
+  const value = `${parsedName}, ${'+91'+parsedPhone}`;
 
   try {
     const result = await redis.sadd(key, value);
 
     if (result === 1) {
-      bot.sendMessage(chatId, `Added ${cleanName} (${cleanService}) in ${cleanCity} with phone number ${cleanPhone}.`);
+      bot.sendMessage(chatId, `Added ${parsedName} (${parsedService}) in ${parsedCity} with phone number ${parsedPhone}.`);
     } else if (result === 0) {
-      bot.sendMessage(chatId, `${cleanName} is already listed under ${cleanService} in ${cleanCity}.`);
+      bot.sendMessage(chatId, `${parsedName} is already listed under ${parsedService} in ${parsedCity}.`);
     } else {
-      bot.sendMessage(chatId, "Unexpected result when adding provider.");
+      bot.sendMessage(chatId, 'Unexpected result when adding provider.');
     }
   } catch (err) {
     console.error('Error adding provider:', err);
-    bot.sendMessage(chatId, "An error occurred while adding the service provider.");
+    bot.sendMessage(chatId, 'An error occurred while adding the service provider.');
   }
 }
 
